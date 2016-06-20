@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Ajenta Vidyo Dashboard - Vidyo Platform Stats{% endblock %}
+
+{% block page_content %}
+    <div class="page-header">
+        <h1 class="text-gradient">Hello {{ request.user.username }} user!</h1>
+    </div>
+
+    <h3>Vidyo Platform stats</h3>
+
+    <body>
+
+    {% for id in ids %}
+        <div id="{{ id }}"></div>
+    {% endfor %}
+
+    </body>
+
+    <footer>
+        <!-- D3.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+        <!--&lt;!&ndash; jQuery &ndash;&gt;-->
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <!-- Plotly.js -->
+        <script src="https://d14fo0winaifog.cloudfront.net/plotly-basic.js"></script>
+
+        <script type="text/javascript">
+            var graphs = {{graph_json | safe}};
+            var ids = {{ids | safe}};
+
+            for (var i in graphs) {
+                Plotly.plot(ids[i], // the ID of the div, created above
+                        graphs[i].data,
+                        graphs[i].layout || {});
+            }
+
+        </script>
+    </footer>
+
+    <a href="{% url 'index' %}">
+        <button class="btn btn-default" type="button">Back</button>
+    </a>
+{% endblock %}

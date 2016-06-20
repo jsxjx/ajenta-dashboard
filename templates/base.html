@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Ajenta Dashboard</title>
+    {% block stylesheets %}
+        <script src=" https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+        <link rel="shortcut icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+        {{ form.media }}
+    {% endblock %}
+</head>
+
+<body>
+{% block navbar %}
+    <div class="navbar navbar-inverse" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{% url 'index' %}"><img alt="ajenta" class="mk-light-logo"
+                                                                      src="https://ajenta.net/wp-content/uploads/2015/07/ajenta_white2.png"
+                                                                      data-retina-src="https://ajenta.net/wp-content/uploads/2015/07/ajenta_white2.png"
+                                                                      data-src-orig="https://ajenta.net/wp-content/uploads/2015/07/ajenta_white2.png"
+                                                                      alt title="Reports"></a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    {% if request.user.is_authenticated %}
+                        {% if request.user.is_superuser %}
+                            <li><a href="{% url 'create-user' %}"><font size="3">Create User</font></a></li>
+                        {% endif %}
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><font size="3">Account </font><b
+                                    class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{% url 'change-password' %}">Change Password</a></li>
+                                <li><a href="{% url 'logout' %}">Log Out</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}"><font size="3">Log In</font></a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+<div class="container">
+    <div class="header clearfix">
+        {% block page_content %}
+
+        {% endblock %}
+    </div>
+
+    {% block scripts %}
+        <noscript class="alert alert-error">
+            <i class="fa fa-exclamation-triangle fa-4x">&nbsp;NoScript</i>
+            <br><br>
+
+            <p>JavaScript is not enabled. This application <em>requires</em> JS to work.</p>
+        </noscript>
+    {% endblock %}
+</div>
+</body>
+
+</html>

@@ -1,0 +1,46 @@
+/*
+Styles for Ajenta by GearedApp
+*/
+
+.text-gradient {
+    color: #f27c36 !important;
+    background-image: -webkit-linear-gradient(left, #f27c36, #ed485f);
+    background: -o-linear-gradient(transparent, transparent);
+    background: -webkit-gradient(linear, left, from(#f27c36), to(#ed485f));
+    background: -webkit-linear-gradient(#f27c36, #ed485f);
+    background: -ms-linear-gradient(#f27c36, #ed485f);
+    background: -o-linear-gradient(#f27c36, #ed485f);
+    zoom: 1;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: normal
+}
+
+@media (min-width: 768px) {
+    .navbar {
+        border-radius: 0px !important;
+    }
+}
+
+.navbar {
+    background-color: #474b51
+}
+
+.navbar-inverse .navbar-brand {
+    color: white;
+}
+
+.navbar-inverse .navbar-brand {
+    color: white;
+}
+
+.navbar-inverse .navbar-brand:hover, .navbar-inverse .navbar-brand:focus {
+    color: #f27c36
+}
+
+@media (min-width: 768px) {
+    .navbar-nav > li > a {
+        margin-top: 15px;
+        /* padding-bottom: 15px; */
+    }
+}
