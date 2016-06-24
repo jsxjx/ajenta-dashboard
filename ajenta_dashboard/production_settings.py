@@ -4,7 +4,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.environ['SECRET_KEY']
 
-DEBUG = os.environ.get('DEBUG', True)
+DEBUG = os.environ.get('DEBUG', False)
 
 ALLOWED_HOSTS = []
 
@@ -32,7 +32,7 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'django_ajenta_dashboard.urls'
+ROOT_URLCONF = 'ajenta_dashboard.urls'
 
 TEMPLATES = [
     {
@@ -51,7 +51,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'django_ajenta_dashboard.wsgi.application'
+WSGI_APPLICATION = 'ajenta_dashboard.wsgi.application'
 
 # Database
 DATABASES = {
@@ -62,16 +62,16 @@ DATABASES = {
     'ajenta_io': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'portal2',
-        'USER': os.environ['AJENTA_DATABASE_NAME'],
-        'PASSWORD': os.environ['AJENTA_DATABASE_PASSWORD'],
-        'HOST': os.environ['AJENTA_DATABASE_HOST'],
+        'USER': os.environ['AJENTA_DB_USERNAME'],
+        'PASSWORD': os.environ['AJENTA_DB_PASSWORD'],
+        'HOST': os.environ['AJENTA_DB_HOST'],
     },
     'platformc': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'portal2',
-        'USER': os.environ['OYDIV_DATABASE_NAME'],
-        'PASSWORD': os.environ['OYDIV_DATABASE_PASSWORD'],
-        'HOST': os.environ['OYDIV_DATABASE_HOST'],
+        'USER': os.environ['OYDIV_DB_USERNAME'],
+        'PASSWORD': os.environ['OYDIV_DB_PASSWORD'],
+        'HOST': os.environ['OYDIV_DB_HOST'],
     },
 }
 
@@ -101,6 +101,8 @@ USE_L10N = False
 
 USE_TZ = False
 
+DATE_INPUT_FORMATS = ('%d/%m/%Y', '%Y/%m/%d')
+
 # Login URL
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/auth/login/'
@@ -115,7 +117,7 @@ STATIC_URL = '/static/'
 
 STATIC_PATH = os.path.join(BASE_DIR, 'static')
 
-STATIC_ROOT = "/var/www/dashboard.ajenta.io/static/"
+STATIC_ROOT = os.path.join(STATIC_PATH, 'dashboard_static')
 
 STATICFILES_DIRS = (
     STATIC_PATH,

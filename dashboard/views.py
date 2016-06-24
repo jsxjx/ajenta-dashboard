@@ -1,3 +1,5 @@
+import csv
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
@@ -15,7 +17,8 @@ report_dict = {
     'Maximum concurrent lines': 'concurrent_lines',
     'Calls by country': 'calls_by_country',
     'Platform Stats': 'platform_stats',
-    'OS Stats': 'os_stats'
+    'OS Stats': 'os_stats',
+    'Download CDR Report': 'cdr_report',
 }
 
 
@@ -121,6 +124,32 @@ def concurrent_lines(request):
 
 
 @login_required
+def platform_stats(request):
+    platforms = calculate_platform_stats(request.session['username'], request.session['selected_db'],
+                                         datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
+                                         datetime.strptime(request.session['end_date'], '%d/%m/%Y'))
+
+    title = 'Vidyo Platform stats'
+    (ids, graph_json) = generate_pie_chart(platforms, title, request.session['username'], request.session['start_date'],
+                                           request.session['end_date'])
+
+    return render(request, 'stats/platform_stats.html', {'ids': ids, 'graph_json': graph_json})
+
+
+@login_required
+def os_stats(request):
+    os = calculate_os_stats(request.session['username'], request.session['selected_db'],
+                            datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
+                            datetime.strptime(request.session['end_date'], '%d/%m/%Y'))
+
+    title = 'OS stats'
+    (ids, graph_json) = generate_pie_chart(os, title, request.session['username'], request.session['start_date'],
+                                           request.session['end_date'])
+
+    return render(request, 'stats/os_stats.html', {'ids': ids, 'graph_json': graph_json})
+
+
+@login_required
 # @allowed_tenant('ActionAid')
 def calls_by_country(request):
     countries = calculate_calls_by_country(request.session['username'], request.session['selected_db'],
@@ -135,26 +164,23 @@ def calls_by_country(request):
 
 
 @login_required
-def platform_stats(request):
-    platforms = calculate_platform_stats(request.session['username'], request.session['selected_db'],
-                                         datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
-                                         datetime.strptime(request.session['end_date'], '%d/%m/%Y'))
+# @allowed_tenant('Jisc')
+def cdr_report(request):
+    report = generate_cdr_report(request.session['selected_db'],
+                                 datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
+                                 datetime.strptime(request.session['end_date'], '%d/%m/%Y'))
 
-    title = 'Vidyo Platform stats'
-    (ids, graph_json) = generate_pie_chart(platforms, title, request.session['username'], request.session['start_date'],
-                                       request.session['end_date'])
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment;filename=CDR.csv'
 
-    return render(request, 'stats/platform_stats.html', {'ids': ids, 'graph_json': graph_json})
+    fields = report.model._meta.fields
 
+    writer = csv.writer(response)
+    column_names = [field.name for field in fields]
 
-@login_required
-def os_stats(request):
-    os = calculate_os_stats(request.session['username'], request.session['selected_db'],
-                            datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
-                            datetime.strptime(request.session['end_date'], '%d/%m/%Y'))
+    writer.writerow(column_names)
 
-    title = 'OS stats'
-    (ids, graph_json) = generate_pie_chart(os, title, request.session['username'], request.session['start_date'],
-                                       request.session['end_date'])
+    for obj in report:
+        writer.writerow([getattr(obj, column) for column in column_names])
 
-    return render(request, 'stats/os_stats.html', {'ids': ids, 'graph_json': graph_json})
+    return response

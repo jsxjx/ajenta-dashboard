@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+import getpass
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -51,7 +52,7 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'django_ajenta_dashboard.urls'
+ROOT_URLCONF = 'ajenta_dashboard.urls'
 
 TEMPLATES = [
     {
@@ -70,7 +71,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'django_ajenta_dashboard.wsgi.application'
+WSGI_APPLICATION = 'ajenta_dashboard.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
@@ -83,16 +84,16 @@ DATABASES = {
     'ajenta_io': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'portal2',
-        'USER': os.environ['AJENTA_DATABASE_NAME'],
-        'PASSWORD': os.environ['AJENTA_DATABASE_PASSWORD'],
-        'HOST': os.environ['AJENTA_DATABASE_HOST'],
+        'USER': os.environ.get('AJENTA_DATABASE_NAME', 'cdraccess'),
+        'PASSWORD': os.environ.get('AJENTA_DATABASE_PASSWORD', getpass.getpass(prompt='Ajenta.io password:')),
+        'HOST': os.environ.get('AJENTA_DATABASE_HOST', '127.0.0.1'),
     },
     'platformc': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'portal2',
-        'USER': os.environ['OYDIV_DATABASE_NAME'],
-        'PASSWORD': os.environ['OYDIV_DATABASE_PASSWORD'],
-        'HOST': os.environ['OYDIV_DATABASE_HOST'],
+        'USER': os.environ.get('OYDIV_DATABASE_NAME', 'cdraccess'),
+        'PASSWORD': os.environ.get('OYDIV_DATABASE_PASSWORD', getpass.getpass(prompt='Platformc password:')),
+        'HOST': os.environ.get('OYDIV_DATABASE_HOST', '127.0.0.1'),
     },
 }
 
@@ -127,7 +128,6 @@ USE_L10N = False
 
 USE_TZ = False
 
-
 DATE_INPUT_FORMATS = ('%d/%m/%Y', '%Y/%m/%d')
 
 # Login URL
@@ -140,6 +140,8 @@ LOGIN_URL = '/auth/login/'
 STATIC_URL = '/static/'
 
 STATIC_PATH = os.path.join(BASE_DIR, 'static')
+
+STATIC_ROOT = os.path.join(STATIC_PATH, 'dashboard_static')
 
 STATICFILES_DIRS = (
     STATIC_PATH,

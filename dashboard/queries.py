@@ -177,6 +177,14 @@ def calculate_os_stats(username, selected_db, start_date, end_date):
     return Counter(filter(None, os))
 
 
+def generate_cdr_report(selected_db, start_date, end_date):
+
+    cdr = Call.objects.using(selected_db). \
+        filter(jointime__date__range=(start_date, end_date)).filter(Q(tenantname="JISC") | Q(tenantname="Gateway4")).all()
+
+    return cdr
+
+
 # Return all the available tenants in order to populate the Tenant drop-down menu
 def get_tenants():
     ajenta_tenants = list(Call.objects.using('ajenta_io').values_list('tenantname', flat=True).distinct())

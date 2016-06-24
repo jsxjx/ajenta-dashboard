@@ -41,6 +41,6 @@ Styles for Ajenta by GearedApp
 @media (min-width: 768px) {
     .navbar-nav > li > a {
         margin-top: 15px;
-        /* padding-bottom: 15px; */
+        /*padding-bottom: 15px;*/
     }
 }

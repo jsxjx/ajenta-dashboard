@@ -43,23 +43,30 @@
             </div>
         </div>
 
-        <br><h4>Please select type of report:</h4>
+        {% if request.user.username == 'Jisc' %}
+            <div class="button-group">
+                <br>
+                <input class="btn btn-default" id="cdr_report" name="report" type="submit" value="Download CDR Report">
+            </div>
+        {% else %}
+            <br><h4>Please select type of report:</h4>
 
-        <div class="btn-group">
-            <input class="btn btn-default" id="user_stats" name="report" type="submit" value="User Stats">
-            <input class="btn btn-default" id="room_stats" name="report" type="submit" value="Room Stats">
-            <input class="btn btn-default" id="calls_per_day" name="report" type="submit" value="Calls per day">
-            <input class="btn btn-default" id="concurrent_lines" name="report" type="submit"
-                   value="Maximum concurrent lines">
+            <div class="btn-group">
+                <input class="btn btn-default" id="user_stats" name="report" type="submit" value="User Stats">
+                <input class="btn btn-default" id="room_stats" name="report" type="submit" value="Room Stats">
+                <input class="btn btn-default" id="calls_per_day" name="report" type="submit" value="Calls per day">
+                <input class="btn btn-default" id="concurrent_lines" name="report" type="submit"
+                       value="Maximum concurrent lines">
 
-            {% if request.user.username == 'ActionAid' %}
-                <input class="btn btn-default" id="calls_by_country" name="report" type="submit"
-                       value="Calls by country">
-            {% endif %}
+                {% if request.user.username == 'ActionAid' %}
+                    <input class="btn btn-default" id="calls_by_country" name="report" type="submit"
+                           value="Calls by country">
+                {% endif %}
 
-            <input class="btn btn-default" id="platform_stats" name="report" type="submit" value="Platform Stats">
-            <input class="btn btn-default" id="os_stats" name="report" type="submit" value="OS Stats">
-        </div>
+                <input class="btn btn-default" id="platform_stats" name="report" type="submit" value="Platform Stats">
+                <input class="btn btn-default" id="os_stats" name="report" type="submit" value="OS Stats">
+            </div>
+        {% endif %}
     </form>
 
 
@@ -71,13 +78,6 @@
 
 
     </form>
-    {##}
-    {#    <script>#}
-    {#        $(function () {#}
-    {#            $('#datetimepicker1').datetimepicker({#}
-    {#                format: 'YYYY-MM-DD' //This is the default date format Django will accept, it also disables the time in the datepicker.#}
-    {#            })#}
-    {#        });#}
-    {#    </script>#}
+
 {% endblock %}
 

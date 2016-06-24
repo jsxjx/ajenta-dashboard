@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^calls_by_country', views.calls_by_country, name='calls_by_country'),
     url(r'^platform-stats', views.platform_stats, name='platform_stats'),
     url(r'^os-stats', views.os_stats, name='os_stats'),
+    url(r'^cdr', views.cdr_report, name='cdr_report'),
 ]
