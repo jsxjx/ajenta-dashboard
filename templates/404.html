@@ -3,7 +3,12 @@
 {% block title %}Ajenta Vidyo Dashboard - Page Not Found{% endblock %}
 
 {% block page_content %}
-<div class="page-header">
-    <h1>Not Found</h1>
-</div>
+    <div class="page-header">
+        <h1 class="text-gradient">Not Found</h1>
+    </div>
+
+    <a href="{% url 'index' %}">
+        <button class="btn btn-default" type="button">Back</button>
+    </a>
+
 {% endblock %}

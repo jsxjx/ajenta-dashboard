@@ -1,13 +1,13 @@
-import csv
+from datetime import datetime
+
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 
 from .forms import UserForm, AdminForm
 from .queries import *
 from .graphs import generate_graph, generate_pie_chart
 from .models import Call
-from datetime import datetime
 
 # Dictionary of reports and the equivalent view functions
 report_dict = {
@@ -24,6 +24,7 @@ report_dict = {
 
 @login_required
 def index(request):
+    #  If this is a POST request then process the form data
     if request.method == 'POST':
         if request.user.is_superuser:
             form = AdminForm(request.POST)
@@ -34,6 +35,7 @@ def index(request):
             request.session['username'] = request.user.username
 
         if form.is_valid():
+            # Select the right database
             if request.session['username'] in Call.objects.using('ajenta_io').values_list('tenantname',
                                                                                           flat=True).distinct():
                 request.session['selected_db'] = 'ajenta_io'
@@ -51,9 +53,11 @@ def index(request):
                 requested_report = report_dict[request.POST['report']]
                 request.session['start_date'] = request.POST.get('start_date')
                 request.session['end_date'] = request.POST.get('end_date')
+                return redirect(requested_report)
             except Exception as exception:
                 print exception
-            return redirect(requested_report)
+
+    # If it is a GET then create a blank form
     else:
         if request.user.is_superuser:
             form = AdminForm()
@@ -61,17 +65,19 @@ def index(request):
         else:
             form = UserForm()
 
+        # Set form fields to previous values
         try:
             form.fields['start_date'].initial = datetime.strptime(request.session['start_date'], '%d/%m/%Y')
             form.fields['end_date'].initial = datetime.strptime(request.session['end_date'], '%d/%m/%Y')
             form.fields['tenant'].initial = request.session['username']
-        except (AssertionError, KeyError):
+        except(AssertionError, KeyError):
             pass
 
     return render(request, 'index.html', {'form': form})
 
 
 @login_required
+@permission_required('authentication.can_view_stats', raise_exception=True)
 def user_stats(request):
     users = calculate_user_stats(request.session['username'], request.session['selected_db'],
                                  datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
@@ -85,6 +91,7 @@ def user_stats(request):
 
 
 @login_required
+@permission_required('authentication.can_view_stats', raise_exception=True)
 def room_stats(request):
     rooms = calculate_room_stats(request.session['username'], request.session['selected_db'],
                                  datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
@@ -98,6 +105,7 @@ def room_stats(request):
 
 
 @login_required
+@permission_required('authentication.can_view_stats', raise_exception=True)
 def calls_per_day(request):
     calls = calculate_calls_per_day(request.session['username'], request.session['selected_db'],
                                     datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
@@ -111,6 +119,7 @@ def calls_per_day(request):
 
 
 @login_required
+@permission_required('authentication.can_view_stats', raise_exception=True)
 def concurrent_lines(request):
     lines = calculate_concurrent_lines(request.session['username'], request.session['selected_db'],
                                        datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
@@ -124,6 +133,7 @@ def concurrent_lines(request):
 
 
 @login_required
+@permission_required('authentication.can_view_stats', raise_exception=True)
 def platform_stats(request):
     platforms = calculate_platform_stats(request.session['username'], request.session['selected_db'],
                                          datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
@@ -137,6 +147,7 @@ def platform_stats(request):
 
 
 @login_required
+@permission_required('authentication.can_view_stats', raise_exception=True)
 def os_stats(request):
     os = calculate_os_stats(request.session['username'], request.session['selected_db'],
                             datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
@@ -150,7 +161,8 @@ def os_stats(request):
 
 
 @login_required
-# @allowed_tenant('ActionAid')
+@permission_required('authentication.can_view_stats', raise_exception=True)
+@user_passes_test(lambda u: u.username == 'ActionAid')
 def calls_by_country(request):
     countries = calculate_calls_by_country(request.session['username'], request.session['selected_db'],
                                            datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
@@ -164,7 +176,7 @@ def calls_by_country(request):
 
 
 @login_required
-# @allowed_tenant('Jisc')
+@user_passes_test(lambda u: u.username == 'Jisc')
 def cdr_report(request):
     report = generate_cdr_report(request.session['selected_db'],
                                  datetime.strptime(request.session['start_date'], '%d/%m/%Y'),

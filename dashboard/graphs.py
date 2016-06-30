@@ -1,15 +1,5 @@
 import json
 import plotly
-from datetime import datetime
-
-
-# # Convert the start date in the desired format
-# def format_start_date(start_date):
-#     return datetime.strptime(start_date, '%Y-%m-%d').strftime('%d/%m/%Y')
-#
-# # Convert the end date in the desired format
-# def format_end_date(end_date):
-#     return datetime.strptime(end_date, '%Y-%m-%d').strftime('%d/%m/%Y')
 
 
 def generate_graph(data, title, username, start_date, end_date):

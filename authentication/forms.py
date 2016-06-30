@@ -8,7 +8,8 @@ class LoginForm(forms.Form):
     remember_me = forms.BooleanField(label='Keep me logged in', required=False)
 
 
-class CreateUserForm(forms.ModelForm):
+class CreateUserForm(forms.Form):
+    username = forms.CharField(label='Username')
     password = forms.CharField(label='Password', widget=forms.PasswordInput())
     confirm_password = forms.CharField(label='Confirm Password', widget=forms.PasswordInput())
 
@@ -25,10 +26,6 @@ class CreateUserForm(forms.ModelForm):
             raise forms.ValidationError('Username already in use.')
 
         return self.cleaned_data
-
-    class Meta:
-        model = User
-        fields = ('username', 'password')
 
 
 class ChangePasswordForm(forms.Form):

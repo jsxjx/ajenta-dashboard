@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 
 from .forms import LoginForm, CreateUserForm, ChangePasswordForm
-
+from .models import DashboardUser
 
 def login(request):
     if request.method == 'POST':
@@ -34,6 +34,8 @@ def create_user(request):
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
             user = User.objects.create_user(username=username, password=password)
+            permission = Permission.objects.get(codename='can_view_stats')
+            user.user_permissions.add(permission)
             user.save()
             messages.add_message(request, messages.SUCCESS, 'User Created.')
             return redirect('index')

@@ -177,11 +177,11 @@ def calculate_os_stats(username, selected_db, start_date, end_date):
     return Counter(filter(None, os))
 
 
+# Return a combined report for JISC and Gateway4 tenants
 def generate_cdr_report(selected_db, start_date, end_date):
-
     cdr = Call.objects.using(selected_db). \
-        filter(jointime__date__range=(start_date, end_date)).filter(Q(tenantname="JISC") | Q(tenantname="Gateway4")).all()
-
+        filter(jointime__date__range=(start_date, end_date)). \
+        filter(Q(tenantname="JISC") | Q(tenantname="Gateway4")).all()
     return cdr
 
 
