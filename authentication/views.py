@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User, Permission
 
 from .forms import LoginForm, CreateUserForm, ChangePasswordForm
-from .models import DashboardUser
+
 
 def login(request):
     if request.method == 'POST':
@@ -27,6 +29,7 @@ def login(request):
     return render(request, 'auth/login.html', {'form': form})
 
 
+@staff_member_required
 def create_user(request):
     if request.method == 'POST':
         form = CreateUserForm(request.POST)
@@ -44,6 +47,7 @@ def create_user(request):
     return render(request, 'auth/create_user.html', {'form': form})
 
 
+@login_required
 def change_password(request):
     if request.method == 'POST':
         form = ChangePasswordForm(request.POST)
@@ -62,6 +66,7 @@ def change_password(request):
     return render(request, 'auth/change_password.html', {'form': form})
 
 
+@login_required
 def logout(request):
     auth_logout(request)
     messages.add_message(request, messages.WARNING, 'You have been logged out.')
