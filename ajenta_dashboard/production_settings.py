@@ -1,4 +1,8 @@
+from __future__ import absolute_import
+
 import os
+
+from celery.schedules import crontab
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -21,6 +25,16 @@ INSTALLED_APPS = [
     'bootstrapform',
     'datetimewidget',
 ]
+
+# Celery
+BROKER_URL = 'redis://127.0.0.1:6379/0'
+BROKER_TRANSPORT = 'redis'
+CELERYBEAT_SCHEDULE = {
+    "send_email": {
+        'task': "dashboard.tasks.send_email",
+        'schedule': crontab(minute=01, hour=00),
+    }
+}
 
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
@@ -91,10 +105,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
-LANGUAGE_CODE = 'en-us'
+# E-mail settings
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
+EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
 
-TIME_ZONE = 'UTC'
+# Internationalization
+LANGUAGE_CODE = 'en-gb'
+
+TIME_ZONE = 'GB'
 
 USE_I18N = False
 
