@@ -5,7 +5,7 @@ celery==3.1.23
 cffi==1.7.0
 cryptography==1.4
 Django==1.9.7
-django-bootstrap-form==3.2.1
+django-bootstrap3==7.0.1
 django-datetime-widget==0.9.3
 enum34==1.1.6
 idna==2.1

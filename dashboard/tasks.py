@@ -9,6 +9,7 @@ from .queries import calculate_concurrent_lines
 
 @app.task
 def send_email():
+    """Send an automated email with the maximum number of concurrent lines per platform."""
     username = 'All'
     start_date = end_date = date.today() - timedelta(1)
 
@@ -23,4 +24,6 @@ def send_email():
               'The maximum number of concurrent lines for platformC on ' \
               + start_date.strftime("%d/%m/%Y") + ' was: ' + str(platformc_lines[start_date])
 
-    send_mail(subject, message, os.environ['EMAIL_HOST_USER'], [os.environ['EMAIL_HOST_USER']], fail_silently=False)
+    # The emails in the EMAIL_LIST environment variable should be separated by one space
+    # (e.g EMAIL_LIST='email1@domain.com email2@domain.com')
+    send_mail(subject, message, os.environ['EMAIL_HOST_USER'], os.environ['EMAIL_LIST'].split(), fail_silently=False)

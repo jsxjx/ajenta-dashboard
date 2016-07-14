@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'authentication',
     'dashboard',
-    'bootstrapform',
+    'bootstrap3',
     'datetimewidget',
 ]
 
@@ -71,6 +71,10 @@ TEMPLATES = [
         },
     },
 ]
+
+BOOTSTRAP3 = {
+    'success_css_class': '',
+}
 
 WSGI_APPLICATION = 'ajenta_dashboard.wsgi.application'
 
@@ -119,9 +123,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en-gb'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'GB'
 
 USE_I18N = False
 

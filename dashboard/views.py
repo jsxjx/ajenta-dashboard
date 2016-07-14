@@ -9,7 +9,7 @@ from .queries import *
 from .graphs import generate_graph, generate_pie_chart
 from .models import Call
 
-# Dictionary of reports and the equivalent view functions
+# Dictionary of reports and the equivalent view functions.
 report_dict = {
     'User Stats': 'user_stats',
     'Room Stats': 'room_stats',
@@ -24,9 +24,9 @@ report_dict = {
 
 @login_required
 def index(request):
-    #  If this is a POST request then process the form data
+    #  If this is a POST request, then process the form data.
     if request.method == 'POST':
-        if request.user.is_superuser:
+        if request.user.is_staff:
             form = AdminForm(request.POST)
             form.fields['tenant'].choices = get_tenants()
             request.session['username'] = request.POST.get('tenant')
@@ -35,9 +35,10 @@ def index(request):
             request.session['username'] = request.user.username
 
         if form.is_valid():
-            # Select the right database
-            if request.session['username'] in Call.objects.using('ajenta_io').values_list('tenantname',
-                                                                                          flat=True).distinct():
+            ajenta_io_tenants = Call.objects.using('ajenta_io').values_list('tenantname', flat=True).distinct()
+
+            # Select the right database.
+            if request.session['username'] in ajenta_io_tenants:
                 request.session['selected_db'] = 'ajenta_io'
             elif request.session['username'] == "All - ajenta.io":
                 request.session['selected_db'] = 'ajenta_io'
@@ -48,7 +49,7 @@ def index(request):
             else:
                 request.session['selected_db'] = 'platformc'
 
-            # Redirect to the right view function, based on the button pressed
+            # Redirect to the right view function, based on the button pressed.
             try:
                 requested_report = report_dict[request.POST['report']]
                 request.session['start_date'] = request.POST.get('start_date')
@@ -57,15 +58,17 @@ def index(request):
             except Exception as exception:
                 print exception
 
-    # If it is a GET then create a blank form
+    # If it is a GET, then create a blank form.
     else:
-        if request.user.is_superuser:
+        if request.user.is_staff:
             form = AdminForm()
             form.fields['tenant'].choices = get_tenants()
         else:
             form = UserForm()
 
-        # Set form fields to previous values
+        # Set form fields to previous values.
+        # If this is the first time the form is loaded,
+        # then the session variables will be empty and therefore the error is ignored.
         try:
             form.fields['start_date'].initial = datetime.strptime(request.session['start_date'], '%d/%m/%Y')
             form.fields['end_date'].initial = datetime.strptime(request.session['end_date'], '%d/%m/%Y')
@@ -79,13 +82,27 @@ def index(request):
 @login_required
 @permission_required('authentication.can_view_stats', raise_exception=True)
 def user_stats(request):
-    users = calculate_user_stats(request.session['username'], request.session['selected_db'],
-                                 datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
-                                 datetime.strptime(request.session['end_date'], '%d/%m/%Y'))
+    # Session variables can be empty if the user types the 'user-stats' URL,
+    # without having sent a POST request from the form in the index page.
+    # In order to avoid this error, the user is redirected to the index page
+    # until a proper POST request is sent.
+    try:
+        username = request.session['username']
+        selected_db = request.session['selected_db']
+        start_date = request.session['start_date']
+        end_date = request.session['end_date']
+    except KeyError:
+        return redirect(index)
+
+    users = calculate_user_stats(username,
+                                 selected_db,
+                                 datetime.strptime(start_date, '%d/%m/%Y'),
+                                 datetime.strptime(end_date, '%d/%m/%Y')
+                                 )
 
     title = '10 most active users'
-    (ids, graph_json) = generate_graph(users, title, request.session['username'], request.session['start_date'],
-                                       request.session['end_date'])
+
+    (ids, graph_json) = generate_graph(users, title, username, start_date, end_date)
 
     return render(request, 'stats/user_stats.html', {'ids': ids, 'graph_json': graph_json})
 
@@ -93,13 +110,24 @@ def user_stats(request):
 @login_required
 @permission_required('authentication.can_view_stats', raise_exception=True)
 def room_stats(request):
-    rooms = calculate_room_stats(request.session['username'], request.session['selected_db'],
-                                 datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
-                                 datetime.strptime(request.session['end_date'], '%d/%m/%Y'))
+    # Similar as above. Please check the comment in user_stats() where the logic is explained.
+    try:
+        username = request.session['username']
+        selected_db = request.session['selected_db']
+        start_date = request.session['start_date']
+        end_date = request.session['end_date']
+    except KeyError:
+        return redirect(index)
+
+    rooms = calculate_room_stats(username,
+                                 selected_db,
+                                 datetime.strptime(start_date, '%d/%m/%Y'),
+                                 datetime.strptime(end_date, '%d/%m/%Y')
+                                 )
 
     title = '10 most active rooms'
-    (ids, graph_json) = generate_graph(rooms, title, request.session['username'], request.session['start_date'],
-                                       request.session['end_date'])
+
+    (ids, graph_json) = generate_graph(rooms, title, username, start_date, end_date)
 
     return render(request, 'stats/room_stats.html', {'ids': ids, 'graph_json': graph_json})
 
@@ -107,13 +135,24 @@ def room_stats(request):
 @login_required
 @permission_required('authentication.can_view_stats', raise_exception=True)
 def calls_per_day(request):
-    calls = calculate_calls_per_day(request.session['username'], request.session['selected_db'],
-                                    datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
-                                    datetime.strptime(request.session['end_date'], '%d/%m/%Y'))
+    # Similar as above. Please check the comment in user_stats() where the logic is explained.
+    try:
+        username = request.session['username']
+        selected_db = request.session['selected_db']
+        start_date = request.session['start_date']
+        end_date = request.session['end_date']
+    except KeyError:
+        return redirect(index)
+
+    calls = calculate_calls_per_day(username,
+                                    selected_db,
+                                    datetime.strptime(start_date, '%d/%m/%Y'),
+                                    datetime.strptime(end_date, '%d/%m/%Y')
+                                    )
 
     title = 'Calls per day'
-    (ids, graph_json) = generate_graph(calls, title, request.session['username'], request.session['start_date'],
-                                       request.session['end_date'])
+
+    (ids, graph_json) = generate_graph(calls, title, username, start_date, end_date)
 
     return render(request, 'stats/calls_per_day.html', {'ids': ids, 'graph_json': graph_json})
 
@@ -121,13 +160,24 @@ def calls_per_day(request):
 @login_required
 @permission_required('authentication.can_view_stats', raise_exception=True)
 def concurrent_lines(request):
-    lines = calculate_concurrent_lines(request.session['username'], request.session['selected_db'],
-                                       datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
-                                       datetime.strptime(request.session['end_date'], '%d/%m/%Y'))
+    # Similar as above. Please check the comment in user_stats() where the logic is explained.
+    try:
+        username = request.session['username']
+        selected_db = request.session['selected_db']
+        start_date = request.session['start_date']
+        end_date = request.session['end_date']
+    except KeyError:
+        return redirect(index)
+
+    lines = calculate_concurrent_lines(username,
+                                       selected_db,
+                                       datetime.strptime(start_date, '%d/%m/%Y'),
+                                       datetime.strptime(end_date, '%d/%m/%Y')
+                                       )
 
     title = 'Maximum concurrent lines'
-    (ids, graph_json) = generate_graph(lines, title, request.session['username'], request.session['start_date'],
-                                       request.session['end_date'])
+
+    (ids, graph_json) = generate_graph(lines, title, username, start_date, end_date)
 
     return render(request, 'stats/concurrent_lines.html', {'ids': ids, 'graph_json': graph_json})
 
@@ -135,13 +185,24 @@ def concurrent_lines(request):
 @login_required
 @permission_required('authentication.can_view_stats', raise_exception=True)
 def platform_stats(request):
-    platforms = calculate_platform_stats(request.session['username'], request.session['selected_db'],
-                                         datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
-                                         datetime.strptime(request.session['end_date'], '%d/%m/%Y'))
+    # Similar as above. Please check the comment in user_stats() where the logic is explained.
+    try:
+        username = request.session['username']
+        selected_db = request.session['selected_db']
+        start_date = request.session['start_date']
+        end_date = request.session['end_date']
+    except KeyError:
+        return redirect(index)
+
+    platforms = calculate_platform_stats(username,
+                                         selected_db,
+                                         datetime.strptime(start_date, '%d/%m/%Y'),
+                                         datetime.strptime(end_date, '%d/%m/%Y')
+                                         )
 
     title = 'Vidyo Platform stats'
-    (ids, graph_json) = generate_pie_chart(platforms, title, request.session['username'], request.session['start_date'],
-                                           request.session['end_date'])
+
+    (ids, graph_json) = generate_pie_chart(platforms, title, username, start_date, end_date)
 
     return render(request, 'stats/platform_stats.html', {'ids': ids, 'graph_json': graph_json})
 
@@ -149,13 +210,24 @@ def platform_stats(request):
 @login_required
 @permission_required('authentication.can_view_stats', raise_exception=True)
 def os_stats(request):
-    os = calculate_os_stats(request.session['username'], request.session['selected_db'],
-                            datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
-                            datetime.strptime(request.session['end_date'], '%d/%m/%Y'))
+    # Similar as above. Please check the comment in user_stats() where the logic is explained.
+    try:
+        username = request.session['username']
+        selected_db = request.session['selected_db']
+        start_date = request.session['start_date']
+        end_date = request.session['end_date']
+    except KeyError:
+        return redirect(index)
+
+    os = calculate_os_stats(username,
+                            selected_db,
+                            datetime.strptime(start_date, '%d/%m/%Y'),
+                            datetime.strptime(end_date, '%d/%m/%Y')
+                            )
 
     title = 'OS stats'
-    (ids, graph_json) = generate_pie_chart(os, title, request.session['username'], request.session['start_date'],
-                                           request.session['end_date'])
+
+    (ids, graph_json) = generate_pie_chart(os, title, username, start_date, end_date)
 
     return render(request, 'stats/os_stats.html', {'ids': ids, 'graph_json': graph_json})
 
@@ -164,13 +236,24 @@ def os_stats(request):
 @permission_required('authentication.can_view_stats', raise_exception=True)
 @user_passes_test(lambda u: u.username == 'ActionAid')
 def calls_by_country(request):
-    countries = calculate_calls_by_country(request.session['username'], request.session['selected_db'],
-                                           datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
-                                           datetime.strptime(request.session['end_date'], '%d/%m/%Y'))
+    # Similar as above. Please check the comment in user_stats() where the logic is explained.
+    try:
+        username = request.session['username']
+        selected_db = request.session['selected_db']
+        start_date = request.session['start_date']
+        end_date = request.session['end_date']
+    except KeyError:
+        return redirect(index)
+
+    countries = calculate_calls_by_country(username,
+                                           selected_db,
+                                           datetime.strptime(start_date, '%d/%m/%Y'),
+                                           datetime.strptime(end_date, '%d/%m/%Y')
+                                           )
 
     title = 'Calls per country'
-    (ids, graph_json) = generate_graph(countries, title, request.session['username'], request.session['start_date'],
-                                       request.session['end_date'])
+
+    (ids, graph_json) = generate_graph(countries, title, username, start_date, end_date)
 
     return render(request, 'stats/calls_by_country.html', {'ids': ids, 'graph_json': graph_json})
 
@@ -178,9 +261,18 @@ def calls_by_country(request):
 @login_required
 @user_passes_test(lambda u: u.username == 'Jisc')
 def cdr_report(request):
-    report = generate_cdr_report(request.session['selected_db'],
-                                 datetime.strptime(request.session['start_date'], '%d/%m/%Y'),
-                                 datetime.strptime(request.session['end_date'], '%d/%m/%Y'))
+    # Similar as above. Please check the comment in user_stats() where the logic is explained.
+    try:
+        selected_db = request.session['selected_db']
+        start_date = request.session['start_date']
+        end_date = request.session['end_date']
+    except KeyError:
+        return redirect(index)
+
+    report = generate_cdr_report(selected_db,
+                                 datetime.strptime(start_date, '%d/%m/%Y'),
+                                 datetime.strptime(end_date, '%d/%m/%Y')
+                                 )
 
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment;filename=CDR.csv'

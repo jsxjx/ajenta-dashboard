@@ -22,7 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'dashboard',
     'authentication',
-    'bootstrapform',
+    'bootstrap3',
     'datetimewidget',
 ]
 
@@ -32,7 +32,7 @@ BROKER_TRANSPORT = 'redis'
 CELERYBEAT_SCHEDULE = {
     "send_email": {
         'task': "dashboard.tasks.send_email",
-        'schedule': crontab(minute=01, hour=00),
+        'schedule': crontab(minute=1, hour=0),
     }
 }
 
@@ -65,6 +65,10 @@ TEMPLATES = [
         },
     },
 ]
+
+BOOTSTRAP3 = {
+    'success_css_class': '',
+}
 
 WSGI_APPLICATION = 'ajenta_dashboard.wsgi.application'
 

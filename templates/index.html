@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load bootstrap %}
+{% load bootstrap3 %}
 
 
 {% block page_content %}
@@ -8,23 +8,9 @@
         <h1 class="text-gradient">Hello {{ request.user.username }} user!</h1>
     </div>
 
-    {% for message in messages %}
-        <div id="message" class="alert alert-warning fade in">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            {{ message }}
-        </div>
+    {% bootstrap_messages %}
 
-        {% if message.tags == "success" %}
-            <script>document.getElementById('message').className = "alert alert-success fade in";</script>
-        {% endif %}
-    {% endfor %}
-
-    {% for error in  form.non_field_errors %}
-        <div id="message" class="alert alert-warning fade in">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            {{ error }}
-        </div>
-    {% endfor %}
+    {% bootstrap_form_errors form type='non_fields' %}
 
     <form action="" method="post">
         {% csrf_token %}
@@ -32,14 +18,14 @@
         <div style="display: inline-block;">
             {% if request.user.is_superuser %}
                 <h4>Please select tenant for your report:</h4>
-                {{ form.tenant|bootstrap }}
+                {% bootstrap_field form.tenant %}
                 <br>
             {% endif %}
 
             <h4>Please select date range for your report:</h4>
             <div class='input-group date'>
-                {{ form.start_date|bootstrap }}
-                {{ form.end_date|bootstrap }}
+                {% bootstrap_field form.start_date %}
+                {% bootstrap_field form.end_date %}
             </div>
         </div>
 

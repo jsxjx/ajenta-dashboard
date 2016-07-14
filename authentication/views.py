@@ -1,8 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
-from django.contrib.auth.decorators import login_required
-from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User, Permission
 
 from .forms import LoginForm, CreateUserForm, ChangePasswordForm
@@ -29,7 +28,8 @@ def login(request):
     return render(request, 'auth/login.html', {'form': form})
 
 
-@staff_member_required
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def create_user(request):
     if request.method == 'POST':
         form = CreateUserForm(request.POST)

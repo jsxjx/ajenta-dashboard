@@ -14,8 +14,8 @@ def time_in_range(start, end, time):
         return start <= time or time <= end
 
 
-# Concurrent lines calculation
 def concurrent_lines(calls):
+    """Concurrent lines calculation."""
     calls_dict = defaultdict(list)
 
     # Create a dictionary of caller names and join/leave times
@@ -48,8 +48,8 @@ def concurrent_lines(calls):
     return max_lines_by_day
 
 
-# Read the 'UsersExport.csv' file used in calculate_calls_by_country()
 def read_users_csv():
+    """Read the 'UsersExport.csv' file used in calculate_calls_by_country()."""
     input_file = open('static/UsersExport.csv')
     columns = 'Username,Group'.split(',')
 
@@ -59,8 +59,8 @@ def read_users_csv():
     return dict(desired_cols)
 
 
-# Return the 10 most active users of the given Tenant for the given date range
 def calculate_user_stats(username, selected_db, start_date, end_date):
+    """Return the 10 most active users of the given Tenant for the given date range."""
     users = Call.objects.using(selected_db). \
         values_list('callername', flat=True). \
         filter(jointime__date__range=(start_date, end_date)).all()
@@ -72,8 +72,8 @@ def calculate_user_stats(username, selected_db, start_date, end_date):
     return OrderedDict(top_users)
 
 
-# Return the 10 most active rooms of the given Tenant for the given date range
 def calculate_room_stats(username, selected_db, start_date, end_date):
+    """Return the 10 most active rooms of the given Tenant for the given date range."""
     rooms = Call.objects.using(selected_db). \
                 values('conferencename'). \
                 annotate(count=Count('uniquecallid', distinct=True)). \
@@ -94,8 +94,8 @@ def calculate_room_stats(username, selected_db, start_date, end_date):
     return top_rooms
 
 
-# Return the calls made for the given Tenant for the given date range and group by day
 def calculate_calls_per_day(username, selected_db, start_date, end_date):
+    """Return the calls made for the given Tenant in the given date range and then group by day."""
     calls = Call.objects.using(selected_db). \
         filter(jointime__date__range=(start_date, end_date)). \
         extra({'date': "date(jointime)"}). \
@@ -116,8 +116,8 @@ def calculate_calls_per_day(username, selected_db, start_date, end_date):
     return calls_per_day
 
 
-# Return the calls made for the given Tenant for the given date range
 def calculate_concurrent_lines(username, selected_db, start_date, end_date):
+    """Return the calls made for the given Tenant in the given date range."""
     calls = Call.objects.using(selected_db). \
         values('callername', 'jointime', 'leavetime'). \
         filter(jointime__date__gte=start_date,
@@ -137,8 +137,8 @@ def calculate_concurrent_lines(username, selected_db, start_date, end_date):
     return concurrent_lines(calls)
 
 
-# Return CallerIDs for the given Tenant for the given date range
 def calculate_calls_by_country(username, selected_db, start_date, end_date):
+    """Return CallerIDs for the given Tenant in the given date range."""
     calls = Call.objects.using(selected_db). \
         values_list('callerid', flat=True). \
         filter(jointime__date__gte=start_date, leavetime__date__lte=end_date).all()
@@ -153,8 +153,8 @@ def calculate_calls_by_country(username, selected_db, start_date, end_date):
     return Counter([users_dict.get(caller) for caller in calls if caller != 'Guest'])
 
 
-# Return platforms for the given Tenant for the given date range
 def calculate_platform_stats(username, selected_db, start_date, end_date):
+    """Return Vidyo platforms used by the Tenant in the given date range."""
     platforms = Call.objects.using(selected_db). \
         values_list('applicationname', flat=True). \
         filter(jointime__date__range=(start_date, end_date)).all()
@@ -165,8 +165,8 @@ def calculate_platform_stats(username, selected_db, start_date, end_date):
     return Counter(filter(None, platforms))
 
 
-# Return Operating Systems for the given Tenant for the given date range
 def calculate_os_stats(username, selected_db, start_date, end_date):
+    """Return Operating Systems used byt the Tenant in the given date range."""
     os = Call.objects.using(selected_db). \
         values_list('applicationos', flat=True). \
         filter(jointime__date__range=(start_date, end_date)).all()
@@ -177,16 +177,16 @@ def calculate_os_stats(username, selected_db, start_date, end_date):
     return Counter(filter(None, os))
 
 
-# Return a combined report for JISC and Gateway4 tenants
 def generate_cdr_report(selected_db, start_date, end_date):
+    """Return a combined report for JISC and Gateway4 tenants."""
     cdr = Call.objects.using(selected_db). \
         filter(jointime__date__range=(start_date, end_date)). \
         filter(Q(tenantname="JISC") | Q(tenantname="Gateway4")).all()
     return cdr
 
 
-# Return all the available tenants in order to populate the Tenant drop-down menu
 def get_tenants():
+    """Return all the available tenants in order to populate the Tenant drop-down menu."""
     ajenta_tenants = list(Call.objects.using('ajenta_io').values_list('tenantname', flat=True).distinct())
     oydiv_tenants = list(Call.objects.using('platformc').values_list('tenantname', flat=True).distinct())
 
