@@ -22,7 +22,9 @@ You need a username and a password provided by Ajenta in order to login to this 
 The following tree diagram shows the code structure:
 
 ```
+.
 ├── ajenta_dashboard
+│   ├── celery.py
 │   ├── __init__.py
 │   ├── production_settings.py
 │   ├── settings.py
@@ -51,10 +53,12 @@ The following tree diagram shows the code structure:
 │   │   └── __init__.py
 │   ├── models.py
 │   ├── queries.py
+│   ├── tasks.py
 │   ├── tests.py
 │   ├── urls.py
 │   └── views.py
 ├── manage.py
+├── README.md
 ├── requirements.txt
 ├── static
 │   ├── css
@@ -79,6 +83,7 @@ The following tree diagram shows the code structure:
 │       ├── platform_stats.html
 │       ├── room_stats.html
 │       └── user_stats.html
+└── users.sqlite3
 ```
 
 The ```ajenta_dashboard``` directory contains the settings of this project (both for development and production) as well as the ```urls.py``` and ```wsgi.py```.
@@ -92,7 +97,7 @@ There are two main apps in this Django project:
      * The ```models.py``` reflects the models as read from the MySQL database using Django's ```inspcetdb``` command.
      * The ```queries.py``` performs all the queries required to generate the reports using Django's ORM.
      * The ```graphs.py``` generates the graphs and pie charts using Python's Plotly.
-
+     * The ```tasks.py``` includes all the automated tasks that have to be executed by Celery.
 Finally there are two directories with the non-Python code
 * The ```static``` directory contains the static files for this app, such as the CSS.
 * The ```templates``` directory contains all the HTML forms used in this app.
