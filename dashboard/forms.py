@@ -1,11 +1,19 @@
-from datetime import date
+from datetime import date, datetime
 from django import forms
 from datetimewidget.widgets import DateWidget
 
 
 class UserForm(forms.Form):
-    start_date = forms.DateField(label='From', required=True, widget=DateWidget(bootstrap_version=3))
-    end_date = forms.DateField(label='To', required=True, widget=DateWidget(bootstrap_version=3))
+    dateOptions = {
+        'format': 'dd/mm/yyyy',
+        'autoclose': True,
+        'weekStart': 1,
+        'startDate': '01/04/2013',
+        'todayBtn': 'true',
+    }
+
+    start_date = forms.DateField(label='From', required=True, widget=DateWidget(options=dateOptions, bootstrap_version=3))
+    end_date = forms.DateField(label='To', required=True, widget=DateWidget(options=dateOptions, bootstrap_version=3))
 
     def clean(self):
         start_date = self.cleaned_data.get('start_date')
@@ -14,14 +22,11 @@ class UserForm(forms.Form):
         if not all((start_date, end_date)):
             return self.cleaned_data
 
-        if start_date < date(2013, 04, 01) or end_date < date(2013, 04, 01):
-            raise forms.ValidationError(message='There is no data before 01/04/2013.')
+        if start_date > end_date:
+            raise forms.ValidationError('End date must be after start date.')
 
         if start_date > date.today() or end_date > date.today():
             raise forms.ValidationError('You cannot select a future date.')
-
-        if start_date > end_date:
-            raise forms.ValidationError('End date must be after start date.')
 
         return self.cleaned_data
 
