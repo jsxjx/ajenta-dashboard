@@ -69,3 +69,4 @@ tests/
 # editor cruft
 .idea/
 pip-selfcheck.json
+.gitignore

@@ -35,11 +35,11 @@ def index(request):
             request.session['username'] = request.user.username
 
         if form.is_valid():
-            ajenta_io_tenants = Call.objects.using('ajenta_io').values_list('tenantname', flat=True).distinct()
+            platformc_tenants = Call.objects.using('platformc').values_list('tenantname', flat=True).distinct()
 
             # Select the right database.
-            if request.session['username'] in ajenta_io_tenants:
-                request.session['selected_db'] = 'ajenta_io'
+            if request.session['username'] in platformc_tenants:
+                request.session['selected_db'] = 'platformc'
             elif request.session['username'] == "All - ajenta.io":
                 request.session['selected_db'] = 'ajenta_io'
                 request.session['username'] = "All"
@@ -47,7 +47,7 @@ def index(request):
                 request.session['selected_db'] = 'platformc'
                 request.session['username'] = "All"
             else:
-                request.session['selected_db'] = 'platformc'
+                request.session['selected_db'] = 'ajenta_io'
 
             # Redirect to the right view function, based on the button pressed.
             try:
