@@ -8,9 +8,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.environ['SECRET_KEY']
 
-DEBUG = os.environ.get('DEBUG', False)
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'dashboard.ajenta.io'
+]
 
 # Application definition
 INSTALLED_APPS = [
