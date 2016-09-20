@@ -31,6 +31,7 @@ def index(request):
             form = AdminForm(request.POST)
             form.fields['tenant'].choices = get_tenants()
             request.session['username'] = request.POST.get('tenant')
+
         else:
             form = UserForm(request.POST)
             request.session['username'] = request.user.username
@@ -46,6 +47,18 @@ def index(request):
                 if request.session['start_date'] < '2016-09-15':
                     request.session['both_dbs'] = True
                 else:
+                    request.session['both_dbs'] = False
+
+                # Set for All in ajenta.io database
+                if request.session['username'] == "All - ajenta.io":
+                    request.session['selected_db'] = 'ajenta.io'
+                    request.session['username'] = "All"
+                    request.session['both_dbs'] = False
+
+                # Set for All in platformc database
+                if request.session['username'] == "All - platformc":
+                    request.session['selected_db'] = 'platformc'
+                    request.session['username'] = "All"
                     request.session['both_dbs'] = False
 
                 return redirect(requested_report)
