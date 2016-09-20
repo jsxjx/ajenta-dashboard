@@ -78,12 +78,15 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'users.sqlite3'),
     },
-    'ajenta_io': {
+    'ajenta.io': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'portal2',
         'USER': os.environ['AJENTA_DB_USERNAME'],
         'PASSWORD': os.environ['AJENTA_DB_PASSWORD'],
         'HOST': os.environ['AJENTA_DB_HOST'],
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     },
     'platformc': {
         'ENGINE': 'django.db.backends.mysql',
@@ -91,6 +94,9 @@ DATABASES = {
         'USER': os.environ['OYDIV_DB_USERNAME'],
         'PASSWORD': os.environ['OYDIV_DB_PASSWORD'],
         'HOST': os.environ['OYDIV_DB_HOST'],
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     },
 }
 
@@ -111,7 +117,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # E-mail settings
 EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp.office365.com'
 EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
 EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
 EMAIL_USE_TLS = True

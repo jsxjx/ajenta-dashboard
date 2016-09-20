@@ -1,3 +1,4 @@
+import csv
 from datetime import datetime
 
 from django.http import HttpResponse
@@ -7,7 +8,7 @@ from django.contrib.auth.decorators import login_required, permission_required, 
 from .forms import UserForm, AdminForm
 from .queries import *
 from .graphs import generate_graph, generate_pie_chart
-from .models import Call
+from .utils import merge_two_dicts
 
 # Dictionary of reports and the equivalent view functions.
 report_dict = {
@@ -35,25 +36,18 @@ def index(request):
             request.session['username'] = request.user.username
 
         if form.is_valid():
-            platformc_tenants = Call.objects.using('platformc').values_list('tenantname', flat=True).distinct()
-
-            # Select the right database.
-            if request.session['username'] in platformc_tenants:
-                request.session['selected_db'] = 'platformc'
-            elif request.session['username'] == "All - ajenta.io":
-                request.session['selected_db'] = 'ajenta_io'
-                request.session['username'] = "All"
-            elif request.session['username'] == "All - platformc":
-                request.session['selected_db'] = 'platformc'
-                request.session['username'] = "All"
-            else:
-                request.session['selected_db'] = 'ajenta_io'
-
             # Redirect to the right view function, based on the button pressed.
             try:
                 requested_report = report_dict[request.POST['report']]
                 request.session['start_date'] = request.POST.get('start_date')
                 request.session['end_date'] = request.POST.get('end_date')
+                request.session['selected_db'] = 'platformc'
+
+                if request.session['start_date'] < '2016-09-15':
+                    request.session['both_dbs'] = True
+                else:
+                    request.session['both_dbs'] = False
+
                 return redirect(requested_report)
             except Exception as exception:
                 print exception
@@ -100,6 +94,15 @@ def user_stats(request):
                                  datetime.strptime(end_date, '%d/%m/%Y')
                                  )
 
+    if request.session['both_dbs']:
+        selected_db = 'ajenta.io'
+        old_users = calculate_user_stats(username,
+                                         selected_db,
+                                         datetime.strptime(start_date, '%d/%m/%Y'),
+                                         datetime.strptime(end_date, '%d/%m/%Y')
+                                         )
+        users = merge_two_dicts(users, old_users)
+
     title = '10 most active users'
 
     (ids, graph_json) = generate_graph(users, title, username, start_date, end_date)
@@ -124,6 +127,15 @@ def room_stats(request):
                                  datetime.strptime(start_date, '%d/%m/%Y'),
                                  datetime.strptime(end_date, '%d/%m/%Y')
                                  )
+
+    if request.session['both_dbs']:
+        selected_db = 'ajenta.io'
+        old_rooms = calculate_room_stats(username,
+                                         selected_db,
+                                         datetime.strptime(start_date, '%d/%m/%Y'),
+                                         datetime.strptime(end_date, '%d/%m/%Y')
+                                         )
+        rooms = merge_two_dicts(rooms, old_rooms)
 
     title = '10 most active rooms'
 
@@ -150,6 +162,15 @@ def calls_per_day(request):
                                     datetime.strptime(end_date, '%d/%m/%Y')
                                     )
 
+    if request.session['both_dbs']:
+        selected_db = 'ajenta.io'
+        old_calls = calculate_calls_per_day(username,
+                                            selected_db,
+                                            datetime.strptime(start_date, '%d/%m/%Y'),
+                                            datetime.strptime(end_date, '%d/%m/%Y')
+                                            )
+        calls = merge_two_dicts(calls, old_calls)
+
     title = 'Calls per day'
 
     (ids, graph_json) = generate_graph(calls, title, username, start_date, end_date)
@@ -174,6 +195,15 @@ def concurrent_lines(request):
                                        datetime.strptime(start_date, '%d/%m/%Y'),
                                        datetime.strptime(end_date, '%d/%m/%Y')
                                        )
+
+    if request.session['both_dbs']:
+        selected_db = 'ajenta.io'
+        old_lines = calculate_concurrent_lines(username,
+                                               selected_db,
+                                               datetime.strptime(start_date, '%d/%m/%Y'),
+                                               datetime.strptime(end_date, '%d/%m/%Y')
+                                               )
+        lines = merge_two_dicts(lines, old_lines)
 
     title = 'Maximum concurrent lines'
 
@@ -200,6 +230,15 @@ def platform_stats(request):
                                          datetime.strptime(end_date, '%d/%m/%Y')
                                          )
 
+    if request.session['both_dbs']:
+        selected_db = 'ajenta.io'
+        old_platforms = calculate_platform_stats(username,
+                                                 selected_db,
+                                                 datetime.strptime(start_date, '%d/%m/%Y'),
+                                                 datetime.strptime(end_date, '%d/%m/%Y')
+                                                 )
+        platforms = merge_two_dicts(platforms, old_platforms)
+
     title = 'Vidyo Platform stats'
 
     (ids, graph_json) = generate_pie_chart(platforms, title, username, start_date, end_date)
@@ -224,6 +263,15 @@ def os_stats(request):
                             datetime.strptime(start_date, '%d/%m/%Y'),
                             datetime.strptime(end_date, '%d/%m/%Y')
                             )
+
+    if request.session['both_dbs']:
+        selected_db = 'ajenta.io'
+        old_os = calculate_os_stats(username,
+                                    selected_db,
+                                    datetime.strptime(start_date, '%d/%m/%Y'),
+                                    datetime.strptime(end_date, '%d/%m/%Y')
+                                    )
+        os = merge_two_dicts(os, old_os)
 
     title = 'OS stats'
 
@@ -251,6 +299,15 @@ def calls_by_country(request):
                                            datetime.strptime(end_date, '%d/%m/%Y')
                                            )
 
+    if request.session['both_dbs']:
+        selected_db = 'ajenta.io'
+        old_countries = calculate_calls_by_country(username,
+                                                   selected_db,
+                                                   datetime.strptime(start_date, '%d/%m/%Y'),
+                                                   datetime.strptime(end_date, '%d/%m/%Y')
+                                                   )
+        countries = merge_two_dicts(countries, old_countries)
+
     title = 'Calls per country'
 
     (ids, graph_json) = generate_graph(countries, title, username, start_date, end_date)
@@ -273,6 +330,14 @@ def cdr_report(request):
                                  datetime.strptime(start_date, '%d/%m/%Y'),
                                  datetime.strptime(end_date, '%d/%m/%Y')
                                  )
+
+    if request.session['both_dbs']:
+        selected_db = 'ajenta.io'
+        old_report = generate_cdr_report(selected_db,
+                                         datetime.strptime(start_date, '%d/%m/%Y'),
+                                         datetime.strptime(end_date, '%d/%m/%Y')
+                                         )
+        report = merge_two_dicts(report, old_report)
 
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment;filename=CDR.csv'

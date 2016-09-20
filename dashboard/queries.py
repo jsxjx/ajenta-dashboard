@@ -1,62 +1,9 @@
-import csv
-from itertools import chain
-from collections import defaultdict, OrderedDict, Counter
+from collections import OrderedDict, Counter
 
 from django.db.models import Count, Q
 
 from .models import Call
-
-
-def time_in_range(start, end, time):
-    if start <= end:
-        return start <= time <= end
-    else:
-        return start <= time or time <= end
-
-
-def concurrent_lines(calls):
-    """Concurrent lines calculation."""
-    calls_dict = defaultdict(list)
-
-    # Create a dictionary of caller names and join/leave times
-    for call in calls:
-        caller_name = call['callername']
-        join_time = call['jointime']
-        leave_time = call['leavetime']
-        calls_dict[caller_name] += (join_time, leave_time)
-
-    # Check if line was active at the given time
-    def line_active_at(call_id, time):
-        time_pairs = calls_dict.get(call_id)
-        for pair in xrange(0, len(time_pairs), 2):
-            if time_in_range(time_pairs[pair], time_pairs[pair + 1], time):
-                return True
-
-    times_list = list(chain.from_iterable(calls_dict.values()))
-
-    # Create a list with the active lines for each time
-    lines_by_time = defaultdict(list)
-    for time in times_list:
-        lines_by_time[time] = [call_id for call_id in calls_dict if line_active_at(call_id, time)]
-
-    # Find the max concurrent lines number for each day
-    max_lines_by_day = defaultdict(int)
-    for time, call_id in lines_by_time.iteritems():
-        day = time.date()
-        max_lines_by_day[day] = max(max_lines_by_day[day], len(set(call_id)))
-
-    return max_lines_by_day
-
-
-def read_users_csv():
-    """Read the 'UsersExport.csv' file used in calculate_calls_by_country()."""
-    input_file = open('static/UsersExport.csv')
-    columns = 'Username,Group'.split(',')
-
-    reader = csv.DictReader(input_file)
-    desired_cols = (tuple(row[col] for col in columns) for row in reader)
-
-    return dict(desired_cols)
+from .utils import read_users_csv, concurrent_lines
 
 
 def calculate_user_stats(username, selected_db, start_date, end_date):
@@ -187,7 +134,7 @@ def generate_cdr_report(selected_db, start_date, end_date):
 
 def get_tenants():
     """Return all the available tenants in order to populate the Tenant drop-down menu."""
-    ajenta_tenants = list(Call.objects.using('ajenta_io').values_list('tenantname', flat=True).distinct())
+    ajenta_tenants = list(Call.objects.using('ajenta.io').values_list('tenantname', flat=True).distinct())
     oydiv_tenants = list(Call.objects.using('platformc').values_list('tenantname', flat=True).distinct())
 
     tenants = ajenta_tenants + oydiv_tenants

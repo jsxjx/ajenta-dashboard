@@ -1,5 +1,4 @@
 from datetime import date, timedelta
-from random import randint
 
 from django.test import TestCase
 from django.contrib.auth.models import User, Permission
@@ -109,6 +108,7 @@ class TestUserWithPermission(TestCase):
         session = self.client.session
         session['username'] = user.username
         session['selected_db'] = 'platformc'
+        session['both_dbs'] = False
         session['start_date'] = (date.today() - timedelta(30)).strftime('%d/%m/%Y')
         session['end_date'] = date.today().strftime('%d/%m/%Y')
         session.save()
@@ -154,7 +154,8 @@ class TestUserSpecificReports(TestCase):
         User.objects.create_user(username='Jisc', password='temp')
 
         session = self.client.session
-        session['selected_db'] = 'ajenta_io'
+        session['selected_db'] = 'ajenta.io'
+        session['both_dbs'] = False
         session['start_date'] = (date.today() - timedelta(30)).strftime('%d/%m/%Y')
         session['end_date'] = date.today().strftime('%d/%m/%Y')
         session.save()
@@ -196,14 +197,6 @@ class TestForm(TestCase):
         self.assertEqual(form.errors, {
             'start_date': ['This field is required.'],
             'end_date': ['This field is required.'],
-        })
-
-    def test_invalid_past_data(self):
-        random_date = date(2013, 04, 01) - timedelta(randint(1, 365))
-        form = UserForm({'start_date': random_date.strftime('%d/%m/%Y'), 'end_date': date.today()})
-        self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {
-            '__all__': ['There is no data before 01/04/2013.']
         })
 
     def test_invalid_future_data(self):
