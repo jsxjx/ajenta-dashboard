@@ -56,6 +56,7 @@ The following tree diagram shows the code structure:
 │   ├── tasks.py
 │   ├── tests.py
 │   ├── urls.py
+│   ├── utils.py
 │   └── views.py
 ├── manage.py
 ├── README.md
