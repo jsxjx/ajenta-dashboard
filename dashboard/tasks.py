@@ -13,7 +13,7 @@ def send_email():
     username = 'All'
     start_date = end_date = date.today() - timedelta(1)
 
-    ajenta_io_lines = calculate_concurrent_lines(username, 'ajenta_io', start_date, end_date)
+    ajenta_io_lines = calculate_concurrent_lines(username, 'ajenta.io', start_date, end_date)
     platformc_lines = calculate_concurrent_lines(username, 'platformc', start_date, end_date)
 
     subject = 'Maximum number of concurrent lines for ' + start_date.strftime("%d/%m/%Y")
