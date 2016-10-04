@@ -67,19 +67,21 @@ def calculate_concurrent_lines(username, selected_db, start_date, end_date):
     """Return the calls made for the given Tenant in the given date range."""
     calls = Call.objects.using(selected_db). \
         values('callername', 'jointime', 'leavetime'). \
-        filter(jointime__date__gte=start_date,
+        filter(~Q(applicationname="VidyoReplay"),
+               ~Q(applicationname="VidyoGateway"),
+               jointime__date__gte=start_date,
                leavetime__date__lte=end_date,
-               callstate="COMPLETED"). \
-        filter(~Q(callername__contains="QUALITY"))
+               callstate="COMPLETED")
 
     if username != "All":
         calls = Call.objects.using(selected_db). \
             values('callername', 'jointime', 'leavetime'). \
-            filter(tenantname=username,
+            filter(~Q(applicationname="VidyoReplay"),
+                   ~Q(applicationname="VidyoGateway"),
+                   tenantname=username,
                    jointime__date__gte=start_date,
                    leavetime__date__lte=end_date,
-                   callstate="COMPLETED"). \
-            filter(~Q(callername__contains="QUALITY"))
+                   callstate="COMPLETED")
 
     return concurrent_lines(calls)
 
