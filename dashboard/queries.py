@@ -134,6 +134,27 @@ def generate_cdr_report(selected_db, start_date, end_date):
     return cdr
 
 
+def calculate_concurrent_gateway_ports(username, selected_db, start_date, end_date):
+    """Return the calls made for the given Tenant in the given date range."""
+    calls = Call.objects.using(selected_db). \
+        values('callername', 'jointime', 'leavetime'). \
+        filter(applicationname="VidyoGateway",
+               jointime__date__gte=start_date,
+               leavetime__date__lte=end_date,
+               callstate="COMPLETED")
+
+    if username != "All":
+        calls = Call.objects.using(selected_db). \
+            values('callername', 'jointime', 'leavetime'). \
+            filter(applicationname="VidyoGateway",
+                   tenantname=username,
+                   jointime__date__gte=start_date,
+                   leavetime__date__lte=end_date,
+                   callstate="COMPLETED")
+
+    return concurrent_lines(calls)
+
+
 def get_tenants():
     """Return all the available tenants in order to populate the Tenant drop-down menu."""
     ajenta_tenants = list(Call.objects.using('ajenta.io').values_list('tenantname', flat=True).distinct())

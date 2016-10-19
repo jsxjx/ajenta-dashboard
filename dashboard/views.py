@@ -16,6 +16,7 @@ report_dict = {
     'Room Stats': 'room_stats',
     'Calls per day': 'calls_per_day',
     'Maximum concurrent lines': 'concurrent_lines',
+    'Concurrent VidyoGateway ports': 'concurrent_gateway_ports',
     'Calls by country': 'calls_by_country',
     'Platform Stats': 'platform_stats',
     'OS Stats': 'os_stats',
@@ -326,6 +327,39 @@ def calls_by_country(request):
     (ids, graph_json) = generate_graph(countries, title, username, start_date, end_date)
 
     return render(request, 'stats/calls_by_country.html', {'ids': ids, 'graph_json': graph_json})
+
+
+@login_required
+# @user_passes_test(lambda u: u.username == 'Jisc')
+def concurrent_gateway_ports(request):
+    try:
+        username = request.session['username']
+        selected_db = request.session['selected_db']
+        start_date = request.session['start_date']
+        end_date = request.session['end_date']
+    except KeyError:
+        return redirect(index)
+
+    gateway_ports = calculate_concurrent_gateway_ports(username,
+                                                       selected_db,
+                                                       datetime.strptime(start_date, '%d/%m/%Y'),
+                                                       datetime.strptime(end_date, '%d/%m/%Y')
+                                                       )
+
+    if request.session['both_dbs']:
+        selected_db = 'ajenta.io'
+        old_gateway_ports = calculate_concurrent_gateway_ports(username,
+                                                               selected_db,
+                                                               datetime.strptime(start_date, '%d/%m/%Y'),
+                                                               datetime.strptime(end_date, '%d/%m/%Y')
+                                                               )
+        gateway_ports = merge_two_dicts(gateway_ports, old_gateway_ports)
+
+    title = 'Maximum concurrent VidyoGateway ports'
+
+    (ids, graph_json) = generate_graph(gateway_ports, title, username, start_date, end_date)
+
+    return render(request, 'stats/concurrent_gateway_ports.html', {'ids': ids, 'graph_json': graph_json})
 
 
 @login_required
