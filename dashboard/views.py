@@ -15,11 +15,13 @@ report_dict = {
     'User Stats': 'user_stats',
     'Room Stats': 'room_stats',
     'Calls per day': 'calls_per_day',
+    'Active partipants per call': 'participants_per_call',
     'Maximum concurrent lines': 'concurrent_lines',
     'Concurrent VidyoGateway ports': 'concurrent_gateway_ports',
     'Calls by country': 'calls_by_country',
     'Platform Stats': 'platform_stats',
     'OS Stats': 'os_stats',
+    'Current Calls': 'current_calls',
     'Download CDR Report': 'cdr_report',
 }
 
@@ -330,7 +332,6 @@ def calls_by_country(request):
 
 
 @login_required
-# @user_passes_test(lambda u: u.username == 'Jisc')
 def concurrent_gateway_ports(request):
     try:
         username = request.session['username']
@@ -360,6 +361,50 @@ def concurrent_gateway_ports(request):
     (ids, graph_json) = generate_graph(gateway_ports, title, username, start_date, end_date)
 
     return render(request, 'stats/concurrent_gateway_ports.html', {'ids': ids, 'graph_json': graph_json})
+
+
+@login_required
+def participants_per_call(request):
+    try:
+        username = request.session['username']
+        selected_db = request.session['selected_db']
+        start_date = request.session['start_date']
+        end_date = request.session['end_date']
+    except KeyError:
+        return redirect(index)
+
+    parties = calculate_participants_per_call(username,
+                                              selected_db,
+                                              datetime.strptime(start_date, '%d/%m/%Y'),
+                                              datetime.strptime(end_date, '%d/%m/%Y')
+                                              )
+
+    if request.session['both_dbs']:
+        selected_db = 'ajenta.io'
+        old_parties = calculate_concurrent_gateway_ports(username,
+                                                         selected_db,
+                                                         datetime.strptime(start_date, '%d/%m/%Y'),
+                                                         datetime.strptime(end_date, '%d/%m/%Y')
+                                                         )
+        parties = merge_two_dicts(parties, old_parties)
+
+    title = 'Active participants per call'
+
+    (ids, graph_json) = generate_graph(parties, title, username, start_date, end_date)
+
+    return render(request, 'stats/participants_per_call.html', {'ids': ids, 'graph_json': graph_json})
+
+
+@login_required
+def current_calls(request):
+    try:
+        username = request.session['username']
+    except KeyError:
+        return redirect(index)
+
+    calls = calculate_current_calls(username)
+
+    return render(request, 'stats/current_calls.html', {'current_calls': calls, 'username': username})
 
 
 @login_required

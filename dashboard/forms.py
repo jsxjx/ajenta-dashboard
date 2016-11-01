@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from django import forms
 from datetimewidget.widgets import DateWidget
 
@@ -12,8 +12,12 @@ class UserForm(forms.Form):
         'todayBtn': 'true',
     }
 
-    start_date = forms.DateField(label='From', required=True, widget=DateWidget(options=dateOptions, bootstrap_version=3))
-    end_date = forms.DateField(label='To', required=True, widget=DateWidget(options=dateOptions, bootstrap_version=3))
+    start_date = forms.DateField(label='From', required=True,
+                                 widget=DateWidget(options=dateOptions, bootstrap_version=3),
+                                 initial=date.today())
+    end_date = forms.DateField(label='To', required=True,
+                               widget=DateWidget(options=dateOptions, bootstrap_version=3),
+                               initial=date.today())
 
     def clean(self):
         start_date = self.cleaned_data.get('start_date')

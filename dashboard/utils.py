@@ -7,7 +7,18 @@ def merge_two_dicts(x, y):
     """Given two dicts, merge them into a new dict and sort it by value."""
     z = x.copy()
     z.update(y)
-    return OrderedDict(sorted(z.items(), key=lambda x:x[1], reverse=True))
+    return OrderedDict(sorted(z.items(), key=lambda x: x[1], reverse=True))
+
+
+def read_users_csv():
+    """Read the 'UsersExport.csv' file used in calculate_calls_by_country()."""
+    input_file = open('static/UsersExport.csv')
+    columns = 'Username,Group'.split(',')
+
+    reader = csv.DictReader(input_file)
+    desired_cols = (tuple(row[col] for col in columns) for row in reader)
+
+    return dict(desired_cols)
 
 
 def time_in_range(start, end, time):
@@ -42,7 +53,13 @@ def concurrent_lines(calls):
     for time in times_list:
         lines_by_time[time] = [call_id for call_id in calls_dict if line_active_at(call_id, time)]
 
-    # Find the max concurrent lines number for each day
+    return lines_by_time
+
+
+def concurrent_lines_per_day(calls):
+    """Find the max concurrent lines number for each day"""
+    lines_by_time = concurrent_lines(calls)
+
     max_lines_by_day = defaultdict(int)
     for time, call_id in lines_by_time.iteritems():
         day = time.date()
@@ -51,12 +68,12 @@ def concurrent_lines(calls):
     return max_lines_by_day
 
 
-def read_users_csv():
-    """Read the 'UsersExport.csv' file used in calculate_calls_by_country()."""
-    input_file = open('static/UsersExport.csv')
-    columns = 'Username,Group'.split(',')
+def participants_per_call(calls, unique_call_id):
+    """Find the max concurrent lines number for each UniqueCallID"""
+    lines_by_time = concurrent_lines(calls)
 
-    reader = csv.DictReader(input_file)
-    desired_cols = (tuple(row[col] for col in columns) for row in reader)
+    max_lines_by_call = defaultdict(int)
+    for time, caller_name in lines_by_time.iteritems():
+        max_lines_by_call[unique_call_id] = max(max_lines_by_call[unique_call_id], len(set(caller_name)))
 
-    return dict(desired_cols)
+    return max_lines_by_call[unique_call_id]

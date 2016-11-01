@@ -13,8 +13,7 @@ def generate_graph(data, title, username, start_date, end_date):
                 ),
             ],
             layout=dict(
-                title=title + ' for ' + username + ' between ' +
-                      str(start_date) + ' and ' + str(end_date)
+                title=title + ' for ' + username + ' between ' + str(start_date) + ' and ' + str(end_date),
             )
         )
     ]
@@ -35,8 +34,7 @@ def generate_pie_chart(data, title, username, start_date, end_date):
                 ),
             ],
             layout=dict(
-                title=title + ' for ' + username + ' between ' +
-                      str(start_date) + ' and ' + str(end_date)
+                title=title + ' for ' + username + ' between ' + str(start_date) + ' and ' + str(end_date)
             )
         )
     ]
