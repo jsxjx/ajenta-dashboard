@@ -71,7 +71,7 @@ DATABASES = {
         'NAME': 'portal2',
         'USER': os.environ.get('AJENTA_DATABASE_NAME', 'cdraccess'),
         'PASSWORD': os.environ.get('AJENTA_DATABASE_PASSWORD', getpass.getpass(prompt='Ajenta.io password:')),
-        'HOST': os.environ.get('AJENTA_DATABASE_HOST', '127.0.0.1'),
+        'HOST': os.environ.get('AJENTA_DATABASE_HOST'),
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
@@ -81,7 +81,7 @@ DATABASES = {
         'NAME': 'portal2',
         'USER': os.environ.get('OYDIV_DATABASE_NAME', 'cdraccess'),
         'PASSWORD': os.environ.get('OYDIV_DATABASE_PASSWORD', getpass.getpass(prompt='Platformc password:')),
-        'HOST': os.environ.get('OYDIV_DATABASE_HOST', '127.0.0.1'),
+        'HOST': os.environ.get('OYDIV_DATABASE_HOST'),
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },

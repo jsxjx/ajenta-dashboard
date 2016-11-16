@@ -16,6 +16,7 @@ report_dict = {
     'Room Stats': 'room_stats',
     'Calls per day': 'calls_per_day',
     'Active partipants per call': 'participants_per_call',
+    'Average meeting length': 'average_meeting_length',
     'Maximum concurrent lines': 'concurrent_lines',
     'Concurrent VidyoGateway ports': 'concurrent_gateway_ports',
     'Calls by country': 'calls_by_country',
@@ -47,7 +48,7 @@ def index(request):
                 request.session['end_date'] = request.POST.get('end_date')
                 request.session['selected_db'] = 'platformc'
 
-                if request.session['start_date'] < '2016-09-15':
+                if datetime.strptime(request.session['start_date'], "%d/%m/%Y") < datetime(2016, 9, 15):
                     request.session['both_dbs'] = True
                 else:
                     request.session['both_dbs'] = False
@@ -192,6 +193,48 @@ def calls_per_day(request):
     (ids, graph_json) = generate_graph(calls, title, username, start_date, end_date)
 
     return render(request, 'stats/calls_per_day.html', {'ids': ids, 'graph_json': graph_json})
+
+
+@login_required
+@permission_required('authentication.can_view_stats', raise_exception=True)
+def average_meeting_length(request):
+    # Similar as above. Please check the comment in user_stats() where the logic is explained.
+    try:
+        username = request.session['username']
+        selected_db = request.session['selected_db']
+        start_date = request.session['start_date']
+        end_date = request.session['end_date']
+    except KeyError:
+        return redirect(index)
+
+    length = calculate_average_meeting_length(username,
+                                              selected_db,
+                                              datetime.strptime(start_date, '%d/%m/%Y'),
+                                              datetime.strptime(end_date, '%d/%m/%Y')
+                                              )
+
+    if request.session['both_dbs']:
+        selected_db = 'ajenta.io'
+        old_length = calculate_average_meeting_length(username,
+                                                      selected_db,
+                                                      datetime.strptime(start_date, '%d/%m/%Y'),
+                                                      datetime.strptime(end_date, '%d/%m/%Y')
+                                                      )
+        length = (length + old_length) / 2
+
+    if length > 60:
+        length /= 60
+        unit = 'minutes'
+    elif length > 3600:
+        length /= 3600
+        unit = 'hours'
+    else:
+        unit = 'seconds'
+
+    title = 'The average meeting length for ' + username + ' between ' + start_date + ' and ' + end_date + ' was: '
+
+    return render(request, 'stats/average_meeting_length.html',
+                  {'title': title, 'length': ("%.2f" % length), 'unit': unit})
 
 
 @login_required

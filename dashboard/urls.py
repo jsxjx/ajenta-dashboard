@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'^room-stats', views.room_stats, name='room_stats'),
     url(r'^calls-per-day', views.calls_per_day, name='calls_per_day'),
     url(r'^participants-per-call', views.participants_per_call, name='participants_per_call'),
+    url(r'^average-meeting-length', views.average_meeting_length, name='average_meeting_length'),
     url(r'^concurrent-lines', views.concurrent_lines, name='concurrent_lines'),
     url(r'^concurrent-gateway-ports', views.concurrent_gateway_ports, name='concurrent_gateway_ports'),
     url(r'^platform-stats', views.platform_stats, name='platform_stats'),

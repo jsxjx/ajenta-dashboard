@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Ajenta Vidyo Dashboard - Current Vidyo calls{% endblock %}
+{% block title %}Ajenta Vidyo Dashboard - Average meeting length{% endblock %}
 
 {% block page_content %}
     <div class="page-header">
         <h1 class="text-gradient">Hello {{ request.user.username }} user!</h1>
     </div>
 
-    <h3>Current Vidyo calls</h3>
-    <h5>There are <b>{{ current_calls }}</b> Vidyo calls for {{ username }} currently in place.</h5><br>
+    <h3>Average meeting length</h3><br>
+    <h5>{{ title }} <b>{{ length }}</b> {{ unit }}.</h5><br>
 
 
     <a href="{% url 'index' %}">

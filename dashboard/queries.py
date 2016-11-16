@@ -1,6 +1,6 @@
 from collections import OrderedDict, Counter
 
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Max, Min, DurationField, ExpressionWrapper, Avg, Sum, FloatField
 
 from .models import Call
 from .utils import read_users_csv, concurrent_lines_per_day, participants_per_call
@@ -81,7 +81,6 @@ def calculate_participants_per_call(username, selected_db, start_date, end_date)
 
             active_parties_dict[id] = participants_per_call(parties, id)
     else:
-        active_parties_dict = {}
         call_ids_list = Call.objects.using(selected_db). \
             filter(~Q(applicationname="VidyoReplay"),
                    ~Q(applicationname="VidyoGateway"),
@@ -105,6 +104,27 @@ def calculate_participants_per_call(username, selected_db, start_date, end_date)
             active_parties_dict[str(id)] = participants_per_call(parties, id)
 
     return OrderedDict(Counter(active_parties_dict).most_common(10))
+
+
+def calculate_average_meeting_length(username, selected_db, start_date, end_date):
+    """Return the average length of the calls made by the given Tenant in the given date range."""
+    length = Call.objects.using(selected_db). \
+        values('uniquecallid'). \
+        filter(jointime__date__gte=start_date,
+               leavetime__date__lte=end_date,
+               callstate="COMPLETED"). \
+        annotate(call_length=ExpressionWrapper(Max('leavetime') - Min('jointime'), output_field=DurationField()))
+
+    if username != "All":
+        length = length.filter(tenantname=username)
+
+    count = length.count()
+    length = length.aggregate(sum=Sum('call_length', output_field=DurationField()))
+    try:
+        return length['sum'].total_seconds() / count
+    except AttributeError:
+        # If there are no calls the length['sum'] will be None. Return 0 instead.
+        return 0
 
 
 def calculate_concurrent_lines(username, selected_db, start_date, end_date):
